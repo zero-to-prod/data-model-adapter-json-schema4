@@ -4,7 +4,7 @@ namespace Tests\Unit\Definitions\Array;
 
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
-use Zerotoprod\DataModelAdapterOpenapi30\JsonSchema4Adapter;
+use Zerotoprod\DataModelAdapterJsonSchema4\JsonSchema4Adapter;
 use Zerotoprod\DataModelGenerator\Engine;
 use Zerotoprod\DataModelGenerator\Models\Components;
 use Zerotoprod\DataModelGenerator\Models\Config;
@@ -31,7 +31,7 @@ class ArrayTest extends TestCase
                 /** @see \$authors */
                 public const authors = 'authors';
                 /**
-                 * List of authors that contributed to the package. This is typically the main maintainers, not the full list. 
+                 * List of authors that contributed to the package. This is typically the main maintainers, not the full list.
                  * @var array<int|string, AuthorsItem>
                  */
                 #[\Zerotoprod\DataModel\Describe(['cast' => [\Zerotoprod\DataModelHelper\DataModelHelper::class, 'mapOf'], 'type' => AuthorsItem::class])]

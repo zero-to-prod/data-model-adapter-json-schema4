@@ -1,6 +1,6 @@
 <?php
 
-namespace Zerotoprod\DataModelAdapterOpenapi30\Resolvers;
+namespace Zerotoprod\DataModelAdapterJsonSchema4\Resolvers;
 
 use Zerotoprod\DataModelGenerator\Models\Config;
 use Zerotoprod\JsonSchema4\JsonSchema4;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Zerotoprod\DataModelAdapterOpenapi30\Helpers;
+namespace Zerotoprod\DataModelAdapterJsonSchema4\Helpers;
 
 use Zerotoprod\DataModelHelper\DataModelHelper;
 use Zerotoprod\Transformable\Transformable;

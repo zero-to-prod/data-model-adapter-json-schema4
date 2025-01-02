@@ -4,7 +4,7 @@ namespace Tests\Acceptance\Properties\Comment\False;
 
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
-use Zerotoprod\DataModelAdapterOpenapi30\JsonSchema4Adapter;
+use Zerotoprod\DataModelAdapterJsonSchema4\JsonSchema4Adapter;
 use Zerotoprod\DataModelGenerator\Engine;
 use Zerotoprod\DataModelGenerator\Models\Config;
 use Zerotoprod\DataModelGenerator\Models\PropertyConfig;

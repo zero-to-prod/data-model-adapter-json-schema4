@@ -1,0 +1,13 @@
+{
+  "title": "User",
+  "type": "object",
+  "properties": {
+    "require": {
+      "type": "object",
+      "description": "description",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

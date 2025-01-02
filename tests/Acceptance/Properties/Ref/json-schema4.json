@@ -1,0 +1,20 @@
+{
+  "title": "User",
+  "type": "object",
+  "properties": {
+    "source": {
+      "$ref": "#/definitions/source"
+    }
+  },
+  "definitions": {
+    "source": {
+      "type": "object",
+      "description": "description",
+      "properties": {
+        "type": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

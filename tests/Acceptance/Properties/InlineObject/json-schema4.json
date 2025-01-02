@@ -1,0 +1,24 @@
+{
+  "title": "User",
+  "type": "object",
+  "properties": {
+    "funding": {
+      "type": "array",
+      "description": "A list of options to fund the development and maintenance of the package.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of funding or platform through which funding is possible."
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to a website with details on funding and a way to fund the package.",
+            "format": "uri"
+          }
+        }
+      }
+    }
+  }
+}

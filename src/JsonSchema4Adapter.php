@@ -1,8 +1,8 @@
 <?php
 
-namespace Zerotoprod\DataModelAdapterOpenapi30;
+namespace Zerotoprod\DataModelAdapterJsonSchema4;
 
-use Zerotoprod\DataModelAdapterOpenapi30\Resolvers\PropertyTypeResolver;
+use Zerotoprod\DataModelAdapterJsonSchema4\Resolvers\PropertyTypeResolver;
 use Zerotoprod\DataModelGenerator\Models\BackedEnumType;
 use Zerotoprod\DataModelGenerator\Models\Components;
 use Zerotoprod\DataModelGenerator\Models\Config;
@@ -20,10 +20,27 @@ class JsonSchema4Adapter
 
     public static function renderModel(JsonSchema4 $Schema, Config $Config, ?string $key = null, $array = false): array
     {
-        $constants = null;
-        $properties = null;
+        $constants = [];
+        $properties = [];
+        $Enums = [];
         foreach ($Schema->properties as $property_name => $PropertySchema) {
             $psr_property_name = VarName::generate($property_name);
+            $enum = null;
+            if ($PropertySchema->enum) {
+                $enum = (isset($Config->namespace) ? '\\'.$Config->namespace.'\\' : null).Classname::generate(basename($property_name)).'Enum';
+                $Enums[$psr_property_name] = [
+                    Enum::comment => isset($PropertySchema->description) ? "/** $PropertySchema->description */" : null,
+                    Enum::filename => Classname::generate($psr_property_name, 'Enum.php'),
+                    Enum::backed_type => BackedEnumType::string,
+                    Enum::cases => array_map(
+                        static fn($value) => [
+                            EnumCase::name => $value,
+                            EnumCase::value => "'$value'"
+                        ],
+                        $PropertySchema->enum,
+                    ),
+                ];
+            }
 
             if (!$Config->exclude_constants
                 && ($Config->comments || (isset($Config->constants->exclude_comments) && $Config->constants->exclude_comments))
@@ -54,22 +71,46 @@ class JsonSchema4Adapter
 
             $is_nested = $PropertySchema->ref && isset($Schema->definitions[basename($PropertySchema->ref)])
                 && $Schema->definitions[basename($PropertySchema->ref)]->type === 'array';
+            $is_ref = $PropertySchema->ref && isset($Schema->definitions[basename($PropertySchema->ref)])
+                && $Schema->definitions[basename($PropertySchema->ref)]->type === 'object';
+            $is_inline = $PropertySchema->items?->type === 'object' && count($PropertySchema->items->properties);
+            if ($is_nested || $is_inline || $is_ref) {
+                $namespace = (isset($Config->namespace) ? '\\'.$Config->namespace.'\\' : null);
+                if ($is_ref) {
+                    $class = $namespace.Classname::generate($psr_property_name);
+                } else {
+                    $class = $namespace.Classname::generate(
+                            $is_inline
+                                ? $psr_property_name
+                                : basename($PropertySchema->ref)
+                        ).'Item';
+                }
 
-            if ($is_nested) {
-                $class = (isset($Config->namespace) ? '\\'.$Config->namespace.'\\' : null).Classname::generate(basename($PropertySchema->ref)).'Item';
                 $describe[] = "'cast' => [\\Zerotoprod\\DataModelHelper\\DataModelHelper::class, 'mapOf'], 'type' => $class::class";
-                $description = $Schema->definitions[basename($PropertySchema->ref)]->description;
+                $description = $is_inline
+                    ? $PropertySchema->description
+                    : $Schema->definitions[basename($PropertySchema->ref)]->description;
 
-                $comment = $description
-                    ? <<<PHP
-                    /**
-                     * $description 
-                     * @var array<int|string, $class>
-                     */
-                    PHP
-                    : <<<PHP
-                    /** @var array<int|string, $class> */
-                    PHP;
+                if ($is_ref) {
+                    $comment = $description
+                        ? <<<PHP
+                        /** $description */
+                        PHP
+                        : null;
+                } else {
+                    $var_comment = "@var array<int|string, $class>";
+
+                    $comment = $description
+                        ? <<<PHP
+                        /**
+                         * $description
+                         * $var_comment
+                         */
+                        PHP
+                        : <<<PHP
+                        /** $var_comment */
+                        PHP;
+                }
             } else {
                 $comment = $PropertySchema->description
                     ? <<<PHP
@@ -86,13 +127,13 @@ class JsonSchema4Adapter
             ) {
                 $type = 'array';
             } else {
-                $type = $PropertySchema->type === 'object'
+                $type = ($PropertySchema->type === 'object' || $PropertySchema->type === ['object'])
                     ? (isset($Config->namespace) ? '\\'.$Config->namespace.'\\' : null).Classname::generate($property_name)
                     : PropertyTypeResolver::resolve($PropertySchema, $Config);
             }
 
             if ($type === 'array' && !$is_nested) {
-                if ($PropertySchema->type === 'object') {
+                if ($PropertySchema->type === 'object' && !$PropertySchema->additionalProperties) {
                     $types = (isset($Config->namespace) ? '\\'.$Config->namespace.'\\' : null).Classname::generate($property_name).'Item';
                 } else {
                     $types = is_array($PropertySchema->items?->type)
@@ -100,37 +141,64 @@ class JsonSchema4Adapter
                         : $PropertySchema->items?->type;
                 }
 
-                $joined = $PropertySchema?->description.' '.$PropertySchema->items?->description;
+                if ($is_inline) {
+                    $types = (isset($Config->namespace) ? '\\'.$Config->namespace.'\\' : null).Classname::generate($psr_property_name).'Item';
+                }
 
-                $comment = ($PropertySchema->description || $PropertySchema->items->description)
+                $joined = $PropertySchema?->description.' '.$PropertySchema->items?->description;
+                $var = $types
+                    ? "@var array<int, $types>"
+                    : "@var array";
+                $comment = ($PropertySchema->description || $PropertySchema->items?->description)
                     ? <<<PHP
                     /**
                      * $joined
-                     * @var array<int, $types>
+                     * $var
                      */
                     PHP
-                    : <<<PHP
-                    /**
-                     * @var array<int, $types>
-                     */
-                    PHP;
+                    : null;
+            }
+
+            if ($is_ref) {
+                $type = (isset($Config->namespace) ? '\\'.$Config->namespace.'\\' : null).Classname::generate($psr_property_name);
+            }
+
+            $attributes = $describe && !$is_ref ? ["#[\\Zerotoprod\\DataModel\\Describe([".implode(', ', $describe)."])]"] : null;
+            $comment = $comment
+            && ($Config->comments || (isset($Config->properties->exclude_comments) && $Config->properties->exclude_comments))
+                ? $comment
+                : null;
+            if ($PropertySchema->type === 'object'
+                && !is_bool($PropertySchema->additionalProperties)
+                && (
+                    $PropertySchema->additionalProperties?->type === 'string'
+                    || $PropertySchema->additionalProperties?->type === 'integer'
+                    || $PropertySchema->additionalProperties?->type === 'array'
+                )
+            ) {
+                $comment = $PropertySchema->description ? "/** $PropertySchema->description */" : null;
+                $type = 'array';
+            }
+
+            if ($enum) {
+                $type = $enum;
             }
 
             $properties[$psr_property_name] = [
-                Property::attributes => $describe ? ["#[\\Zerotoprod\\DataModel\\Describe([".implode(', ', $describe)."])]"] : null,
-                Property::comment => $comment
-                && ($Config->comments || (isset($Config->properties->exclude_comments) && $Config->properties->exclude_comments))
-                    ? $comment
-                    : null,
+                Property::attributes => $attributes,
+                Property::comment => $comment,
                 Property::type => $type,
             ];
         }
 
         return [
-            Model::filename => Classname::generate($key, $array ? 'Item.php' : '.php'),
-            Model::comment => isset($Schema->description) && $Config->comments ? "/** $Schema->description */" : null,
-            Model::constants => $constants,
-            Model::properties => $properties,
+            "enums" => $Enums,
+            "models" => [
+                Model::filename => Classname::generate($key, $array ? 'Item.php' : '.php'),
+                Model::comment => isset($Schema->description) && $Config->comments ? "/** $Schema->description */" : null,
+                Model::constants => $constants,
+                Model::properties => $properties,
+            ],
         ];
     }
 
@@ -138,28 +206,41 @@ class JsonSchema4Adapter
     {
         $JsonSchema4 = JsonSchema4::from(json_decode($open_api_30_schema, true));
         $Models = [];
-        $Models[] = self::renderModel($JsonSchema4, $Config, $JsonSchema4->title);
+        $Enums = [];
 
+        ['models' => $models, 'enums' => $enums] = self::renderModel($JsonSchema4, $Config, $JsonSchema4->title);
+        $Models[] = $models;
+        $Enums[] = array_merge(...array_values($enums));
         foreach ($JsonSchema4->properties as $key => $Schema) {
-            if ($Schema->type === 'object' && !$Schema->additionalProperties) {
-                $Models[] = self::renderModel($Schema, $Config, $key);
+            if (($Schema->type === 'object' || $Schema->type === ['object']) && !$Schema->additionalProperties) {
+                ['models' => $models, 'enums' => $enums] = self::renderModel($Schema, $Config, $key);
+                $Models[] = $models;
+                $Enums[] = array_merge(...array_values($enums));
             }
             if ($Schema->items?->type === 'object') {
-                $Models[] = self::renderModel($JsonSchema4::from($Schema->items), $Config, $key, true);
+                ['models' => $models, 'enums' => $enums] = self::renderModel($Schema->items, $Config, $key, true);
+                $Models[] = $models;
+                $Enums[] = array_merge(...array_values($enums));
             }
         }
 
         foreach ($JsonSchema4->definitions as $key => $Schema) {
             if ($Schema->items?->type === 'object') {
-                $Models[] = self::renderModel($JsonSchema4::from($Schema->items), $Config, $key, true);
+                ['models' => $models, 'enums' => $enums] = self::renderModel($Schema->items, $Config, $key, true);
+                $Models[] = $models;
+                $Enums[] = array_merge(...array_values($enums));
+            }
+            if ($Schema?->type === 'object') {
+                ['models' => $models, 'enums' => $enums] = self::renderModel($Schema, $Config, $key);
+                $Models[] = $models;
+                $Enums[] = array_merge(...array_values($enums));
             }
         }
-        $Enums = [];
 
         return Components::from([
             Components::Config => $Config,
             Components::Models => $Models,
-            Components::Enums => $Enums,
+            Components::Enums => array_merge(...array_map(fn($item) => [$item['filename'] => $item], array_filter($Enums))),
         ]);
     }
 
