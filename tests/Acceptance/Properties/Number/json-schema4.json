@@ -1,0 +1,13 @@
+{
+  "title": "User",
+  "type": "object",
+  "properties": {
+    "age": {
+      "type": "number"
+    },
+    "age2": {
+      "type": "number",
+      "format": "int32"
+    }
+  }
+}

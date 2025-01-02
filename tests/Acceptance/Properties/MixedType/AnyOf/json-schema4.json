@@ -1,0 +1,17 @@
+{
+  "title": "User",
+  "type": "object",
+  "properties": {
+    "age": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "int32"
+        },
+        {
+          "type": "integer"
+        }
+      ]
+    }
+  }
+}

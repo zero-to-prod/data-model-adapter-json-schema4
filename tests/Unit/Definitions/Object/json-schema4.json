@@ -1,0 +1,13 @@
+{
+  "title": "Composer Package",
+  "properties": {
+    "author": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

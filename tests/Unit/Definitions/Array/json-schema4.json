@@ -1,0 +1,25 @@
+{
+  "title": "Composer Package",
+  "properties": {
+    "authors": {
+      "$ref": "#/definitions/authors"
+    }
+  },
+  "definitions": {
+    "authors": {
+      "type": "array",
+      "description": "List of authors that contributed to the package. This is typically the main maintainers, not the full list.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [ "name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name of the author."
+          }
+        }
+      }
+    }
+  }
+}

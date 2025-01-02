@@ -1,0 +1,10 @@
+{
+  "title": "User",
+  "type": "object",
+  "properties": {
+    "age": {
+      "type": "number",
+      "description": "age"
+    }
+  }
+}

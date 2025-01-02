@@ -1,0 +1,20 @@
+{
+  "title": "User",
+  "type": "object",
+  "properties": {
+    "age": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "format": "int32"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "integer"
+        }
+      ]
+    }
+  }
+}

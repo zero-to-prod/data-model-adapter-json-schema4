@@ -1,0 +1,14 @@
+{
+  "title": "User",
+  "type": "object",
+  "properties": {
+    "active": {
+      "type": ["array"],
+      "description": "description",
+      "items": {
+        "type": ["string", "integer"],
+        "description": "Item Description"
+      }
+    }
+  }
+}
