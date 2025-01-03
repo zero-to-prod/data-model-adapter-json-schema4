@@ -8,16 +8,20 @@ use Tests\generated\AuthorsItem;
 use Tests\generated\Autoload;
 use Tests\generated\AutoloadDev;
 use Tests\generated\ComposerPackage;
+use Tests\generated\Config;
+use Tests\generated\ConfigureOptionsItem;
 use Tests\generated\Dist;
 use Tests\generated\FundingItem;
 use Tests\generated\MinimumStabilityEnum;
+use Tests\generated\OsFamiliesEnum;
+use Tests\generated\OsFamiliesExcludeEnum;
 use Tests\generated\PhpExt;
 use Tests\generated\Source;
 use Tests\generated\Support;
 use Tests\TestCase;
 use Zerotoprod\DataModelAdapterJsonSchema4\JsonSchema4Adapter;
 use Zerotoprod\DataModelGenerator\Engine;
-use Zerotoprod\DataModelGenerator\Models\Config;
+use Zerotoprod\DataModelGenerator\Models\Config as ConfigAlias;
 use Zerotoprod\DataModelGenerator\Models\ModelConfig;
 
 class AllTest extends TestCase
@@ -113,6 +117,22 @@ class AllTest extends TestCase
                 PhpExt::support_zts => true,
                 PhpExt::support_nts => true,
                 PhpExt::build_path => 'build_path',
+                PhpExt::os_families => [
+                    OsFamiliesEnum::bsd->value
+                ],
+                PhpExt::os_families_exclude => [
+                    OsFamiliesExcludeEnum::bsd->value
+                ],
+                PhpExt::configure_options => [
+                    [
+                        ConfigureOptionsItem::name => 'name',
+                        ConfigureOptionsItem::description => 'description',
+                        ConfigureOptionsItem::needs_value => true,
+                    ]
+                ]
+            ],
+            ComposerPackage::config => [
+                Config::platform => ['a']
             ]
         ]);
 
@@ -181,6 +201,11 @@ class AllTest extends TestCase
         self::assertTrue($ComposerPackage->php_ext->support_zts);
         self::assertTrue($ComposerPackage->php_ext->support_nts);
         self::assertEquals('build_path', $ComposerPackage->php_ext->build_path);
+        self::assertEquals(OsFamiliesEnum::bsd, $ComposerPackage->php_ext->os_families[0]);
+        self::assertEquals(OsFamiliesExcludeEnum::bsd, $ComposerPackage->php_ext->os_families_exclude[0]);
+        self::assertEquals('name', $ComposerPackage->php_ext->configure_options[0]->name);
+        self::assertEquals('description', $ComposerPackage->php_ext->configure_options[0]->description);
+        self::assertTrue($ComposerPackage->php_ext->configure_options[0]->needs_value);
     }
 
     #[Test] public function licence_array(): void
@@ -242,11 +267,11 @@ class AllTest extends TestCase
     {
         $Components = JsonSchema4Adapter::adapt(
             file_get_contents(__DIR__.'/json-schema4.json'),
-            Config::from([
-                Config::directory => self::$test_dir,
-                Config::properties => [],
-                Config::namespace => 'Tests\\generated',
-                Config::model => [
+            ConfigAlias::from([
+                ConfigAlias::directory => self::$test_dir,
+                ConfigAlias::properties => [],
+                ConfigAlias::namespace => 'Tests\\generated',
+                ConfigAlias::model => [
                     ModelConfig::use_statements => ['use \\Zerotoprod\\DataModel\\DataModel;']
                 ]
             ])
