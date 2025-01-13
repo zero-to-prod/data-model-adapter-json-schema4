@@ -11,5 +11,4 @@ for PHP_VERSION in "${PHP_VERSIONS[@]}"; do
   then
     exit 1
   fi
-
 done
