@@ -210,6 +210,10 @@ class JsonSchema4Adapter
                         PHP;
             }
 
+            if ($PropertySchema->type === ['object'] && ($PropertySchema->additionalProperties->type === 'string' || $PropertySchema->additionalProperties->type === 'array')) {
+                $type = 'array';
+            }
+
             $properties[$psr_property_name] = [
                 Property::attributes => $attributes,
                 Property::comment => $comment,
