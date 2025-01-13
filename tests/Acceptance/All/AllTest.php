@@ -16,6 +16,7 @@ use Tests\generated\MinimumStabilityEnum;
 use Tests\generated\OsFamiliesEnum;
 use Tests\generated\OsFamiliesExcludeEnum;
 use Tests\generated\PhpExt;
+use Tests\generated\Scripts;
 use Tests\generated\Source;
 use Tests\generated\Support;
 use Tests\TestCase;
@@ -133,6 +134,32 @@ class AllTest extends TestCase
             ],
             ComposerPackage::config => [
                 Config::platform => ['a']
+            ],
+            ComposerPackage::extra => [
+                'laravel' => [
+                    'dont-discover' => []
+                ]
+            ],
+            ComposerPackage::scripts => [
+                Scripts::pre_install_cmd => Scripts::pre_install_cmd,
+                Scripts::post_install_cmd => Scripts::post_install_cmd,
+                Scripts::pre_update_cmd => Scripts::pre_update_cmd,
+                Scripts::post_update_cmd => Scripts::post_update_cmd,
+                Scripts::pre_status_cmd => Scripts::pre_status_cmd,
+                Scripts::post_status_cmd => Scripts::post_status_cmd,
+                Scripts::pre_package_install => Scripts::pre_package_install,
+                Scripts::post_package_install => Scripts::post_package_install,
+                Scripts::pre_package_update => Scripts::pre_package_update,
+                Scripts::post_package_update => Scripts::post_package_update,
+                Scripts::pre_package_uninstall => Scripts::pre_package_uninstall,
+                Scripts::post_package_uninstall => Scripts::post_package_uninstall,
+                Scripts::pre_autoload_dump => Scripts::pre_autoload_dump,
+                Scripts::post_autoload_dump => Scripts::post_autoload_dump,
+                Scripts::post_root_package_install => Scripts::post_root_package_install,
+                Scripts::post_create_project_cmd => Scripts::post_create_project_cmd,
+            ],
+            ComposerPackage::scripts_descriptions => [
+                'key' => 'value'
             ]
         ]);
 
@@ -206,6 +233,25 @@ class AllTest extends TestCase
         self::assertEquals('name', $ComposerPackage->php_ext->configure_options[0]->name);
         self::assertEquals('description', $ComposerPackage->php_ext->configure_options[0]->description);
         self::assertTrue($ComposerPackage->php_ext->configure_options[0]->needs_value);
+        self::assertEquals([], $ComposerPackage->extra['laravel']['dont-discover']);
+        self::assertEquals(Scripts::pre_install_cmd, $ComposerPackage->scripts->pre_install_cmd);
+        self::assertEquals(Scripts::post_install_cmd, $ComposerPackage->scripts->post_install_cmd);
+        self::assertEquals(Scripts::pre_update_cmd, $ComposerPackage->scripts->pre_update_cmd);
+        self::assertEquals(Scripts::post_update_cmd, $ComposerPackage->scripts->post_update_cmd);
+        self::assertEquals(Scripts::pre_status_cmd, $ComposerPackage->scripts->pre_status_cmd);
+        self::assertEquals(Scripts::post_status_cmd, $ComposerPackage->scripts->post_status_cmd);
+        self::assertEquals(Scripts::pre_package_install, $ComposerPackage->scripts->pre_package_install);
+        self::assertEquals(Scripts::post_package_install, $ComposerPackage->scripts->post_package_install);
+        self::assertEquals(Scripts::pre_package_update, $ComposerPackage->scripts->pre_package_update);
+        self::assertEquals(Scripts::post_package_update, $ComposerPackage->scripts->post_package_update);
+        self::assertEquals(Scripts::pre_package_uninstall, $ComposerPackage->scripts->pre_package_uninstall);
+        self::assertEquals(Scripts::post_package_uninstall, $ComposerPackage->scripts->post_package_uninstall);
+        self::assertEquals(Scripts::pre_autoload_dump, $ComposerPackage->scripts->pre_autoload_dump);
+        self::assertEquals(Scripts::post_autoload_dump, $ComposerPackage->scripts->post_autoload_dump);
+        self::assertEquals(Scripts::post_root_package_install, $ComposerPackage->scripts->post_root_package_install);
+        self::assertEquals(Scripts::post_create_project_cmd, $ComposerPackage->scripts->post_create_project_cmd);
+        self::assertEquals('value', $ComposerPackage->scripts_descriptions['key']);
+
     }
 
     #[Test] public function licence_array(): void
