@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    public static string $test_dir = './tests/generated';
+    public static string $test_dir = __DIR__.'../../tests/generated';
 
     protected function setUp(): void
     {
