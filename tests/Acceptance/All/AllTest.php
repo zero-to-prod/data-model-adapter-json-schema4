@@ -160,6 +160,9 @@ class AllTest extends TestCase
             ],
             ComposerPackage::scripts_descriptions => [
                 'key' => 'value'
+            ],
+            ComposerPackage::scripts_aliases => [
+                ['key' => 'value']
             ]
         ]);
 
@@ -251,7 +254,7 @@ class AllTest extends TestCase
         self::assertEquals(Scripts::post_root_package_install, $ComposerPackage->scripts->post_root_package_install);
         self::assertEquals(Scripts::post_create_project_cmd, $ComposerPackage->scripts->post_create_project_cmd);
         self::assertEquals('value', $ComposerPackage->scripts_descriptions['key']);
-
+        self::assertEquals(['key' => 'value'], $ComposerPackage->scripts_aliases[0]);
     }
 
     #[Test] public function licence_array(): void
