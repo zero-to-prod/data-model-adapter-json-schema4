@@ -8,16 +8,21 @@ use Tests\generated\AuthorsItem;
 use Tests\generated\Autoload;
 use Tests\generated\AutoloadDev;
 use Tests\generated\ComposerPackage;
+use Tests\generated\Config;
+use Tests\generated\ConfigureOptionsItem;
 use Tests\generated\Dist;
 use Tests\generated\FundingItem;
 use Tests\generated\MinimumStabilityEnum;
+use Tests\generated\OsFamiliesEnum;
+use Tests\generated\OsFamiliesExcludeEnum;
 use Tests\generated\PhpExt;
+use Tests\generated\Scripts;
 use Tests\generated\Source;
 use Tests\generated\Support;
 use Tests\TestCase;
 use Zerotoprod\DataModelAdapterJsonSchema4\JsonSchema4Adapter;
 use Zerotoprod\DataModelGenerator\Engine;
-use Zerotoprod\DataModelGenerator\Models\Config;
+use Zerotoprod\DataModelGenerator\Models\Config as ConfigAlias;
 use Zerotoprod\DataModelGenerator\Models\ModelConfig;
 
 class AllTest extends TestCase
@@ -113,6 +118,51 @@ class AllTest extends TestCase
                 PhpExt::support_zts => true,
                 PhpExt::support_nts => true,
                 PhpExt::build_path => 'build_path',
+                PhpExt::os_families => [
+                    OsFamiliesEnum::bsd->value
+                ],
+                PhpExt::os_families_exclude => [
+                    OsFamiliesExcludeEnum::bsd->value
+                ],
+                PhpExt::configure_options => [
+                    [
+                        ConfigureOptionsItem::name => 'name',
+                        ConfigureOptionsItem::description => 'description',
+                        ConfigureOptionsItem::needs_value => true,
+                    ]
+                ]
+            ],
+            ComposerPackage::config => [
+                Config::platform => ['a']
+            ],
+            ComposerPackage::extra => [
+                'laravel' => [
+                    'dont-discover' => []
+                ]
+            ],
+            ComposerPackage::scripts => [
+                Scripts::pre_install_cmd => Scripts::pre_install_cmd,
+                Scripts::post_install_cmd => Scripts::post_install_cmd,
+                Scripts::pre_update_cmd => Scripts::pre_update_cmd,
+                Scripts::post_update_cmd => Scripts::post_update_cmd,
+                Scripts::pre_status_cmd => Scripts::pre_status_cmd,
+                Scripts::post_status_cmd => Scripts::post_status_cmd,
+                Scripts::pre_package_install => Scripts::pre_package_install,
+                Scripts::post_package_install => Scripts::post_package_install,
+                Scripts::pre_package_update => Scripts::pre_package_update,
+                Scripts::post_package_update => Scripts::post_package_update,
+                Scripts::pre_package_uninstall => Scripts::pre_package_uninstall,
+                Scripts::post_package_uninstall => Scripts::post_package_uninstall,
+                Scripts::pre_autoload_dump => Scripts::pre_autoload_dump,
+                Scripts::post_autoload_dump => Scripts::post_autoload_dump,
+                Scripts::post_root_package_install => Scripts::post_root_package_install,
+                Scripts::post_create_project_cmd => Scripts::post_create_project_cmd,
+            ],
+            ComposerPackage::scripts_descriptions => [
+                'key' => 'value'
+            ],
+            ComposerPackage::scripts_aliases => [
+                ['key' => 'value']
             ]
         ]);
 
@@ -181,6 +231,30 @@ class AllTest extends TestCase
         self::assertTrue($ComposerPackage->php_ext->support_zts);
         self::assertTrue($ComposerPackage->php_ext->support_nts);
         self::assertEquals('build_path', $ComposerPackage->php_ext->build_path);
+        self::assertEquals(OsFamiliesEnum::bsd, $ComposerPackage->php_ext->os_families[0]);
+        self::assertEquals(OsFamiliesExcludeEnum::bsd, $ComposerPackage->php_ext->os_families_exclude[0]);
+        self::assertEquals('name', $ComposerPackage->php_ext->configure_options[0]->name);
+        self::assertEquals('description', $ComposerPackage->php_ext->configure_options[0]->description);
+        self::assertTrue($ComposerPackage->php_ext->configure_options[0]->needs_value);
+        self::assertEquals([], $ComposerPackage->extra['laravel']['dont-discover']);
+        self::assertEquals(Scripts::pre_install_cmd, $ComposerPackage->scripts->pre_install_cmd);
+        self::assertEquals(Scripts::post_install_cmd, $ComposerPackage->scripts->post_install_cmd);
+        self::assertEquals(Scripts::pre_update_cmd, $ComposerPackage->scripts->pre_update_cmd);
+        self::assertEquals(Scripts::post_update_cmd, $ComposerPackage->scripts->post_update_cmd);
+        self::assertEquals(Scripts::pre_status_cmd, $ComposerPackage->scripts->pre_status_cmd);
+        self::assertEquals(Scripts::post_status_cmd, $ComposerPackage->scripts->post_status_cmd);
+        self::assertEquals(Scripts::pre_package_install, $ComposerPackage->scripts->pre_package_install);
+        self::assertEquals(Scripts::post_package_install, $ComposerPackage->scripts->post_package_install);
+        self::assertEquals(Scripts::pre_package_update, $ComposerPackage->scripts->pre_package_update);
+        self::assertEquals(Scripts::post_package_update, $ComposerPackage->scripts->post_package_update);
+        self::assertEquals(Scripts::pre_package_uninstall, $ComposerPackage->scripts->pre_package_uninstall);
+        self::assertEquals(Scripts::post_package_uninstall, $ComposerPackage->scripts->post_package_uninstall);
+        self::assertEquals(Scripts::pre_autoload_dump, $ComposerPackage->scripts->pre_autoload_dump);
+        self::assertEquals(Scripts::post_autoload_dump, $ComposerPackage->scripts->post_autoload_dump);
+        self::assertEquals(Scripts::post_root_package_install, $ComposerPackage->scripts->post_root_package_install);
+        self::assertEquals(Scripts::post_create_project_cmd, $ComposerPackage->scripts->post_create_project_cmd);
+        self::assertEquals('value', $ComposerPackage->scripts_descriptions['key']);
+        self::assertEquals(['key' => 'value'], $ComposerPackage->scripts_aliases[0]);
     }
 
     #[Test] public function licence_array(): void
@@ -242,11 +316,11 @@ class AllTest extends TestCase
     {
         $Components = JsonSchema4Adapter::adapt(
             file_get_contents(__DIR__.'/json-schema4.json'),
-            Config::from([
-                Config::directory => self::$test_dir,
-                Config::properties => [],
-                Config::namespace => 'Tests\\generated',
-                Config::model => [
+            ConfigAlias::from([
+                ConfigAlias::directory => self::$test_dir,
+                ConfigAlias::properties => [],
+                ConfigAlias::namespace => 'Tests\\generated',
+                ConfigAlias::model => [
                     ModelConfig::use_statements => ['use \\Zerotoprod\\DataModel\\DataModel;']
                 ]
             ])

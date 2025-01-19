@@ -26,10 +26,19 @@ class JsonSchema4Adapter
         foreach ($Schema->properties as $property_name => $PropertySchema) {
             $psr_property_name = VarName::generate($property_name);
             $enum = null;
+            $enum_values = null;
+            $enum_comment = null;
             if ($PropertySchema->enum) {
+                $enum_values = $PropertySchema->enum;
+                $enum_comment = isset($PropertySchema->description) ? "/** $PropertySchema->description */" : null;
+            } elseif ($PropertySchema->items?->enum) {
+                $enum_values = $PropertySchema->items->enum;
+                $enum_comment = isset($PropertySchema->items->description) ? "/** {$PropertySchema->items->description} */" : null;
+            }
+            if ($enum_values) {
                 $enum = (isset($Config->namespace) ? '\\'.$Config->namespace.'\\' : null).Classname::generate(basename($property_name)).'Enum';
                 $Enums[$psr_property_name] = [
-                    Enum::comment => isset($PropertySchema->description) ? "/** $PropertySchema->description */" : null,
+                    Enum::comment => $enum_comment,
                     Enum::filename => Classname::generate($psr_property_name, 'Enum.php'),
                     Enum::backed_type => BackedEnumType::string,
                     Enum::cases => array_map(
@@ -37,7 +46,7 @@ class JsonSchema4Adapter
                             EnumCase::name => $value,
                             EnumCase::value => "'$value'"
                         ],
-                        $PropertySchema->enum,
+                        $enum_values,
                     ),
                 ];
             }
@@ -184,6 +193,27 @@ class JsonSchema4Adapter
                 $type = $enum;
             }
 
+            if ($enum && ($PropertySchema->type === 'array' || $PropertySchema->type === ['array'])) {
+                $describe[] = "'cast' => [\\Zerotoprod\\DataModelHelper\\DataModelHelper::class, 'mapOf'], 'type' => $enum::class";
+                $attributes = ["#[\\Zerotoprod\\DataModel\\Describe([".implode(', ', $describe)."])]"];
+                $type = 'array';
+
+                $comment = $PropertySchema->description
+                    ? <<<PHP
+                        /**
+                         * $PropertySchema->description
+                         * @var {$enum}[]
+                         */
+                        PHP
+                    : <<<PHP
+                        /** @var {$enum}[] */
+                        PHP;
+            }
+
+            if ($PropertySchema->type === ['object'] && ($PropertySchema->additionalProperties?->type === 'string' || $PropertySchema->additionalProperties?->type === 'array')) {
+                $type = 'array';
+            }
+
             $properties[$psr_property_name] = [
                 Property::attributes => $attributes,
                 Property::comment => $comment,
@@ -210,17 +240,24 @@ class JsonSchema4Adapter
 
         ['models' => $models, 'enums' => $enums] = self::renderModel($JsonSchema4, $Config, $JsonSchema4->title);
         $Models[] = $models;
-        $Enums[] = array_merge(...array_values($enums));
+        $Enums[] = $enums;
         foreach ($JsonSchema4->properties as $key => $Schema) {
             if (($Schema->type === 'object' || $Schema->type === ['object']) && !$Schema->additionalProperties) {
                 ['models' => $models, 'enums' => $enums] = self::renderModel($Schema, $Config, $key);
                 $Models[] = $models;
-                $Enums[] = array_merge(...array_values($enums));
+                $Enums[] = $enums;
             }
             if ($Schema->items?->type === 'object') {
                 ['models' => $models, 'enums' => $enums] = self::renderModel($Schema->items, $Config, $key, true);
                 $Models[] = $models;
-                $Enums[] = array_merge(...array_values($enums));
+                $Enums[] = $enums;
+            }
+            foreach ($Schema->properties as $property_name => $PropertySchema) {
+                if ($PropertySchema->type === 'array' && $PropertySchema->items?->type === 'object' && count($PropertySchema->items->properties)) {
+                    ['models' => $models, 'enums' => $enums] = self::renderModel($PropertySchema->items, $Config, $property_name, array: true);
+                    $Models[] = $models;
+                    $Enums[] = $enums;
+                }
             }
         }
 
@@ -228,19 +265,19 @@ class JsonSchema4Adapter
             if ($Schema->items?->type === 'object') {
                 ['models' => $models, 'enums' => $enums] = self::renderModel($Schema->items, $Config, $key, true);
                 $Models[] = $models;
-                $Enums[] = array_merge(...array_values($enums));
+                $Enums[] = $enums;
             }
             if ($Schema?->type === 'object') {
                 ['models' => $models, 'enums' => $enums] = self::renderModel($Schema, $Config, $key);
                 $Models[] = $models;
-                $Enums[] = array_merge(...array_values($enums));
+                $Enums[] = $enums;
             }
         }
 
         return Components::from([
             Components::Config => $Config,
             Components::Models => $Models,
-            Components::Enums => array_merge(...array_map(fn($item) => [$item['filename'] => $item], array_filter($Enums))),
+            Components::Enums => array_merge(...$Enums),
         ]);
     }
 

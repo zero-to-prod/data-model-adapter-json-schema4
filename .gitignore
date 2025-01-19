@@ -1,7 +1,9 @@
-vendor
-.idea
+/vendor/
+/.idea/
 composer.lock
 .phpunit.result.cache
 .php-cs-fixer.cache
 /tests/generated/
 /.phpunit.cache/
+/.env
+/.vendor/
