@@ -20,7 +20,7 @@ use Tests\generated\Scripts;
 use Tests\generated\Source;
 use Tests\generated\Support;
 use Tests\TestCase;
-use Zerotoprod\DataModelAdapterJsonSchema4\JsonSchema4Adapter;
+use Zerotoprod\DataModelAdapterJsonSchema4\JsonSchema4;
 use Zerotoprod\DataModelGenerator\Engine;
 use Zerotoprod\DataModelGenerator\Models\Config as ConfigAlias;
 use Zerotoprod\DataModelGenerator\Models\ModelConfig;
@@ -314,8 +314,8 @@ class AllTest extends TestCase
 
     private function generate(): void
     {
-        $Components = JsonSchema4Adapter::adapt(
-            file_get_contents(__DIR__.'/json-schema4.json'),
+        $Components = JsonSchema4::adapt(
+            json_decode(file_get_contents(__DIR__.'/json-schema4.json'), true),
             ConfigAlias::from([
                 ConfigAlias::directory => self::$test_dir,
                 ConfigAlias::properties => [],

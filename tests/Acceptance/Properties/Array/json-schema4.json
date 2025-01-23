@@ -3,10 +3,15 @@
   "type": "object",
   "properties": {
     "active": {
-      "type": ["array"],
+      "type": [
+        "array"
+      ],
       "description": "description",
       "items": {
-        "type": ["string", "integer"],
+        "type": [
+          "string",
+          "integer"
+        ],
         "description": "Item Description"
       }
     }

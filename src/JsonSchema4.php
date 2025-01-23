@@ -15,8 +15,57 @@ use Zerotoprod\JsonSchema4\JsonSchema4;
 use Zerotoprod\Psr4Classname\Classname;
 use Zerotoprod\Psr4VarName\VarName;
 
-class JsonSchema4Adapter
+class JsonSchema4
 {
+
+    public static function adapt(array $json_schema4, Config $Config): Components
+    {
+        $JsonSchema4 = JsonSchema4::from($json_schema4);
+        $Models = [];
+        $Enums = [];
+
+        ['models' => $models, 'enums' => $enums] = self::renderModel($JsonSchema4, $Config, $JsonSchema4->title);
+        $Models[] = $models;
+        $Enums[] = $enums;
+        foreach ($JsonSchema4->properties as $key => $Schema) {
+            if (($Schema->type === 'object' || $Schema->type === ['object']) && !$Schema->additionalProperties) {
+                ['models' => $models, 'enums' => $enums] = self::renderModel($Schema, $Config, $key);
+                $Models[] = $models;
+                $Enums[] = $enums;
+            }
+            if ($Schema->items?->type === 'object') {
+                ['models' => $models, 'enums' => $enums] = self::renderModel($Schema->items, $Config, $key, true);
+                $Models[] = $models;
+                $Enums[] = $enums;
+            }
+            foreach ($Schema->properties as $property_name => $PropertySchema) {
+                if ($PropertySchema->type === 'array' && $PropertySchema->items?->type === 'object' && count($PropertySchema->items->properties)) {
+                    ['models' => $models, 'enums' => $enums] = self::renderModel($PropertySchema->items, $Config, $property_name, array: true);
+                    $Models[] = $models;
+                    $Enums[] = $enums;
+                }
+            }
+        }
+
+        foreach ($JsonSchema4->definitions as $key => $Schema) {
+            if ($Schema->items?->type === 'object') {
+                ['models' => $models, 'enums' => $enums] = self::renderModel($Schema->items, $Config, $key, true);
+                $Models[] = $models;
+                $Enums[] = $enums;
+            }
+            if ($Schema?->type === 'object') {
+                ['models' => $models, 'enums' => $enums] = self::renderModel($Schema, $Config, $key);
+                $Models[] = $models;
+                $Enums[] = $enums;
+            }
+        }
+
+        return Components::from([
+            Components::Config => $Config,
+            Components::Models => $Models,
+            Components::Enums => array_merge(...$Enums),
+        ]);
+    }
 
     public static function renderModel(JsonSchema4 $Schema, Config $Config, ?string $key = null, $array = false): array
     {
@@ -230,55 +279,6 @@ class JsonSchema4Adapter
                 Model::properties => $properties,
             ],
         ];
-    }
-
-    public static function adapt(string $open_api_30_schema, Config $Config): Components
-    {
-        $JsonSchema4 = JsonSchema4::from(json_decode($open_api_30_schema, true));
-        $Models = [];
-        $Enums = [];
-
-        ['models' => $models, 'enums' => $enums] = self::renderModel($JsonSchema4, $Config, $JsonSchema4->title);
-        $Models[] = $models;
-        $Enums[] = $enums;
-        foreach ($JsonSchema4->properties as $key => $Schema) {
-            if (($Schema->type === 'object' || $Schema->type === ['object']) && !$Schema->additionalProperties) {
-                ['models' => $models, 'enums' => $enums] = self::renderModel($Schema, $Config, $key);
-                $Models[] = $models;
-                $Enums[] = $enums;
-            }
-            if ($Schema->items?->type === 'object') {
-                ['models' => $models, 'enums' => $enums] = self::renderModel($Schema->items, $Config, $key, true);
-                $Models[] = $models;
-                $Enums[] = $enums;
-            }
-            foreach ($Schema->properties as $property_name => $PropertySchema) {
-                if ($PropertySchema->type === 'array' && $PropertySchema->items?->type === 'object' && count($PropertySchema->items->properties)) {
-                    ['models' => $models, 'enums' => $enums] = self::renderModel($PropertySchema->items, $Config, $property_name, array: true);
-                    $Models[] = $models;
-                    $Enums[] = $enums;
-                }
-            }
-        }
-
-        foreach ($JsonSchema4->definitions as $key => $Schema) {
-            if ($Schema->items?->type === 'object') {
-                ['models' => $models, 'enums' => $enums] = self::renderModel($Schema->items, $Config, $key, true);
-                $Models[] = $models;
-                $Enums[] = $enums;
-            }
-            if ($Schema?->type === 'object') {
-                ['models' => $models, 'enums' => $enums] = self::renderModel($Schema, $Config, $key);
-                $Models[] = $models;
-                $Enums[] = $enums;
-            }
-        }
-
-        return Components::from([
-            Components::Config => $Config,
-            Components::Models => $Models,
-            Components::Enums => array_merge(...$Enums),
-        ]);
     }
 
     public static function adapt2(string $open_api_30_schema, Config $Config): Components

@@ -4,7 +4,6 @@ namespace Zerotoprod\DataModelAdapterJsonSchema4\Resolvers;
 
 use Zerotoprod\DataModelGenerator\Models\Config;
 use Zerotoprod\JsonSchema4\JsonSchema4;
-use Zerotoprod\Psr4Classname\Classname;
 
 class PropertyTypeResolver
 {

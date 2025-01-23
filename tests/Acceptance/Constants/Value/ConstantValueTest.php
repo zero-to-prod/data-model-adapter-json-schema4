@@ -4,7 +4,7 @@ namespace Tests\Acceptance\Constants\Value;
 
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
-use Zerotoprod\DataModelAdapterJsonSchema4\JsonSchema4Adapter;
+use Zerotoprod\DataModelAdapterJsonSchema4\JsonSchema4;
 use Zerotoprod\DataModelGenerator\Engine;
 use Zerotoprod\DataModelGenerator\Models\Config;
 use Zerotoprod\DataModelGenerator\Models\ConstantConfig;
@@ -15,8 +15,8 @@ class ConstantValueTest extends TestCase
 {
     #[Test] public function generate(): void
     {
-        $Components = JsonSchema4Adapter::adapt(
-            file_get_contents(__DIR__.'/json-schema4.json'),
+        $Components = JsonSchema4::adapt(
+            json_decode(file_get_contents(__DIR__.'/json-schema4.json'), true),
             Config::from([
                 Config::directory => self::$test_dir,
                 Config::comments => false,
@@ -40,8 +40,8 @@ class ConstantValueTest extends TestCase
 
     #[Test] public function disable_comment_constant(): void
     {
-        $Components = JsonSchema4Adapter::adapt(
-            file_get_contents(__DIR__.'/json-schema4.json'),
+        $Components = JsonSchema4::adapt(
+            json_decode(file_get_contents(__DIR__.'/json-schema4.json'), true),
             Config::from([
                 Config::directory => self::$test_dir,
                 Config::properties => [
@@ -74,8 +74,8 @@ class ConstantValueTest extends TestCase
 
     #[Test] public function enable_comment_constant(): void
     {
-        $Components = JsonSchema4Adapter::adapt(
-            file_get_contents(__DIR__.'/json-schema4.json'),
+        $Components = JsonSchema4::adapt(
+            json_decode(file_get_contents(__DIR__.'/json-schema4.json'), true),
             Config::from([
                 Config::directory => self::$test_dir,
                 Config::properties => [
@@ -111,8 +111,8 @@ class ConstantValueTest extends TestCase
 
     #[Test] public function enable_comment_config(): void
     {
-        $Components = JsonSchema4Adapter::adapt(
-            file_get_contents(__DIR__.'/json-schema4.json'),
+        $Components = JsonSchema4::adapt(
+            json_decode(file_get_contents(__DIR__.'/json-schema4.json'), true),
             Config::from([
                 Config::directory => self::$test_dir,
                 Config::properties => [
