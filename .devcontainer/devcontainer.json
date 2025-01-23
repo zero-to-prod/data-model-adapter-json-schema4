@@ -9,5 +9,5 @@
       "moby": true
     }
   },
-  "postCreateCommand": ".devcontainer/postCreateCommand.sh"
+  "postCreateCommand": "cat .devcontainer/.bashrc >> ~/.bashrc"
 }
