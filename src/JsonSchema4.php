@@ -11,7 +11,7 @@ use Zerotoprod\DataModelGenerator\Models\Enum;
 use Zerotoprod\DataModelGenerator\Models\EnumCase;
 use Zerotoprod\DataModelGenerator\Models\Model;
 use Zerotoprod\DataModelGenerator\Models\Property;
-use Zerotoprod\JsonSchema4\JsonSchema4;
+use Zerotoprod\JsonSchema4\JsonSchema4 as JsonSchema4Model;
 use Zerotoprod\Psr4Classname\Classname;
 use Zerotoprod\Psr4VarName\VarName;
 
@@ -20,7 +20,7 @@ class JsonSchema4
 
     public static function adapt(array $json_schema4, Config $Config): Components
     {
-        $JsonSchema4 = JsonSchema4::from($json_schema4);
+        $JsonSchema4 = JsonSchema4Model::from($json_schema4);
         $Models = [];
         $Enums = [];
 
@@ -67,7 +67,7 @@ class JsonSchema4
         ]);
     }
 
-    public static function renderModel(JsonSchema4 $Schema, Config $Config, ?string $key = null, $array = false): array
+    public static function renderModel(JsonSchema4Model $Schema, Config $Config, ?string $key = null, $array = false): array
     {
         $constants = [];
         $properties = [];
@@ -180,7 +180,7 @@ class JsonSchema4
             if ($is_nested) {
                 $type = 'array';
             } elseif ($PropertySchema->type === 'object'
-                && $PropertySchema->additionalProperties instanceof JsonSchema4
+                && $PropertySchema->additionalProperties instanceof JsonSchema4Model
                 && $PropertySchema->additionalProperties->type !== 'object'
             ) {
                 $type = 'array';
