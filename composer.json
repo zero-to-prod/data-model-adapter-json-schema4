@@ -34,7 +34,7 @@
   "require": {
     "php": ">=8.1.0",
     "zero-to-prod/data-model": "^81.7",
-    "zero-to-prod/data-model-openapi30": "^81.7",
+    "zero-to-prod/data-model-openapi30": "^v0.1.14",
     "zero-to-prod/data-model-helper": "^82.0.4",
     "zero-to-prod/psr4-classname": "^71.0.1",
     "zero-to-prod/json-schema4": "^1.0.1",
