@@ -15,9 +15,16 @@ use Zerotoprod\JsonSchema4\JsonSchema4 as JsonSchema4Model;
 use Zerotoprod\Psr4Classname\Classname;
 use Zerotoprod\Psr4VarName\VarName;
 
+/**
+ * An adapter for JSON Schema 4 for DataModelGenerator
+ * @link https://github.com/zero-to-prod/data-model-adapter-json-schema4
+ */
 class JsonSchema4
 {
 
+    /**
+     * @link https://github.com/zero-to-prod/data-model-adapter-json-schema4
+     */
     public static function adapt(array $json_schema4, Config $Config): Components
     {
         $JsonSchema4 = JsonSchema4Model::from($json_schema4);
@@ -67,6 +74,9 @@ class JsonSchema4
         ]);
     }
 
+    /**
+     * @link https://github.com/zero-to-prod/data-model-adapter-json-schema4
+     */
     public static function renderModel(JsonSchema4Model $Schema, Config $Config, ?string $key = null, $array = false): array
     {
         $constants = [];
@@ -281,6 +291,9 @@ class JsonSchema4
         ];
     }
 
+    /**
+     * @link https://github.com/zero-to-prod/data-model-adapter-json-schema4
+     */
     public static function adapt2(string $open_api_30_schema, Config $Config): Components
     {
         $OpenApi = OpenApi::from(json_decode($open_api_30_schema, true));
