@@ -9,11 +9,51 @@
 [![wakatime](https://wakatime.com/badge/github/zero-to-prod/data-model-adapter-json-schema4.svg)](https://wakatime.com/badge/github/zero-to-prod/data-model-adapter-json-schema4)
 [![Hits-of-Code](https://hitsofcode.com/github/zero-to-prod/data-model-adapter-json-schema4?branch=main)](https://hitsofcode.com/github/zero-to-prod/data-model-adapter-json-schema4/view?branch=main)
 
+## Contents
+
+- [Installation](#installation)
+- [Documentation Publishing](#documentation-publishing)
+    - [Automatic Documentation Publishing](#automatic-documentation-publishing)
+- [Testing](#testing)
+
 ## Installation
 You can install this package via Composer.
 
 ```shell
 composer require zero-to-prod/data-model-adapter-json-schema4
+```
+
+## Documentation Publishing
+
+You can publish this README to your local documentation directory.
+
+This can be useful for providing documentation for AI agents.
+
+This can be done using the included script:
+
+```bash
+# Publish to default location (./docs/zero-to-prod/data-model-adapter-json-schema4)
+vendor/bin/zero-to-prod-data-model-adapter-json-schema4
+
+# Publish to custom directory
+vendor/bin/zero-to-prod-data-model-adapter-json-schema4 /path/to/your/docs
+```
+
+### Automatic Documentation Publishing
+
+You can automatically publish documentation by adding the following to your `composer.json`:
+
+```json
+{
+    "scripts": {
+        "post-install-cmd": [
+            "zero-to-prod-data-model-adapter-json-schema4"
+        ],
+        "post-update-cmd": [
+            "zero-to-prod-data-model-adapter-json-schema4"
+        ]
+    }
+}
 ```
 
 ## Testing
